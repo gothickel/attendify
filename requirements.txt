@@ -1,4 +1,10 @@
 flask
 gunicorn
 mysql.connector
-
+os
+numpy
+cv2
+pickle
+randint
+datetime
+pyttsx3
