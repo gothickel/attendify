@@ -1,5 +1,6 @@
 from flask import Flask
 import mysql.connector
+import cv2
 
 app = Flask(__name__)
 
@@ -31,10 +32,8 @@ def check_cv2():
     try:
         version = cv2.__version__
         return f"OpenCV is installed. Version: {version}"
-    except ImportError:
-        return "OpenCV (cv2) is NOT installed."
+    except Exception as e:
+        return f"OpenCV (cv2) is NOT installed. Error: {str(e)}"
         
 if __name__ == "__main__":
-    app.run()
-
-
+    app.run(debug=True)
