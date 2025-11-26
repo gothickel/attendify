@@ -1,3 +1,4 @@
 flask
 gunicorn
-datetime
+mysql.connector
+os
