@@ -8,7 +8,7 @@ def home():
     return "MySQL Test App Running"
 
 @app.route("/attendance")
-def testdb():
+def attendance():
     try:
         db = mysql.connector.connect(
             host="mysql1001.site4now.net",
@@ -25,13 +25,16 @@ def testdb():
         return f"Connected to MySQL! Server time: {result[0]}"
     except Exception as e:
         return f"Database connection error: {str(e)}"
-        
+
+@app.route('/check_cv2')
+def check_cv2():
     try:
-        import cv2
-        print("OpenCV is installed. Version:", cv2.__version__)
+        version = cv2.__version__
+        return f"OpenCV is installed. Version: {version}"
     except ImportError:
-        print("OpenCV (cv2) is NOT installed.")
+        return "OpenCV (cv2) is NOT installed."
         
 if __name__ == "__main__":
     app.run()
+
 
