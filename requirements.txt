@@ -3,5 +3,8 @@ gunicorn
 mysql.connector
 numpy
 cv2
+opencv-python
+opencv-python-headless
 pyttsx3
+
 
