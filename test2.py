@@ -1,14 +1,18 @@
-import mysql.connector
+from flask import Flask
+from datetime import datetime
 
-conn = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="",
-    database="attendify",
-    use_pure=True
-)
+app = Flask(__name__)
 
-if conn.is_connected():
-    print("Database connected successfully")
-else:
-    print("Failed to connect to the database")
+@app.route("/")
+def home():
+    return "MySQL Test App Running"
+
+@app.route("/testdb")
+def testdb():
+    try:
+        return f"Connected: Server time: {datetime.now().time()}"
+    except Exception as e:
+        return f"Connection error: {str(e)}"
+
+if __name__ == "__main__":
+    app.run()
