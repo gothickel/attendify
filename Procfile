@@ -1,1 +1,1 @@
-web: gunicorn test2:app
+web: gunicorn attendance:app
