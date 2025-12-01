@@ -32,7 +32,7 @@ def attendance():
 # ------- IP CAMERA STREAMING ---------
 
 def generate_frames():
-    url = "http://192.168.100.90:8080/video"   # DroidCam or IP Cam
+    url = "https://shaunte-prebronze-destiny.ngrok-free.dev"   # DroidCam or IP Cam
 
     cap = cv2.VideoCapture(url)
 
@@ -60,3 +60,4 @@ def camera():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
