@@ -29,11 +29,27 @@ def attendance():
 
 @app.route('/check_cv2')
 def check_cv2():
-    try:
-        version = cv2.__version__
-        return f"OpenCV is installed. Version: {version}"
-    except Exception as e:
-        return f"OpenCV (cv2) is NOT installed. Error: {str(e)}"
-        
+    url = "http://192.168.100.90:8080/video"
+
+    cap = cv2.VideoCapture(url)
+    
+    if not cap.isOpened():
+        print("❌ Cannot connect to IP camera")
+        exit()
+    
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("❌ Failed to grab frame")
+            break
+    
+        cv2.imshow("IP Camera Stream", frame)
+    
+        if cv2.waitKey(1) == 27:  # press ESC to exit
+            break
+    
+    cap.release()
+    cv2.destroyAllWindows()
 if __name__ == "__main__":
     app.run(debug=True)
+
