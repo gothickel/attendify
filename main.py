@@ -2,12 +2,12 @@ import subprocess
 import signal
 from flask import Flask, send_from_directory
 from flask_sock import Sock
-
+import os
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 sock = Sock(app)
 
 # CHANGE THIS to your camera RTSP URL or set as environment variable before deploy
-RTSP_URL = "rtsp://admin:Camera123@192.168.100.53:554/stream1"
+RTSP_URL = os.getenv("RTSP_URL")
 
 def ffmpeg_process(rtsp_url):
     # ffmpeg command: read RTSP and output MPEG1 video to stdout
