@@ -4,7 +4,7 @@ from flask import Flask, Response
 app = Flask(__name__)
 
 # --- CHANGE THIS TO YOUR CAMERA ---
-RTSP_URL = "rtsp://admin:Camera123@192.168.100.53:554/stream1"
+RTSP_URL = "rtsp://admin:Camera123@195.184.246.150:554/stream1"
 
 def generate_frames():
     cap = cv2.VideoCapture(RTSP_URL)
@@ -44,3 +44,4 @@ if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
