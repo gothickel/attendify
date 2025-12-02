@@ -1,9 +1,11 @@
 flask
+flask-sock
 gunicorn
 mysql-connector-python
 opencv-python-headless
 pyttsx3
 numpy 
+
 
 
 
