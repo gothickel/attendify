@@ -1,53 +1,46 @@
-import subprocess
-import signal
-from flask import Flask, send_from_directory
-from flask_sock import Sock
-import os
+import cv2
+from flask import Flask, Response
 
-app = Flask(__name__, static_folder='static', static_url_path='/static')
-sock = Sock(app)
+app = Flask(__name__)
 
-# Load RTSP URL from Railway environment variable
-RTSP_URL = os.getenv("RTSP_URL")
+# --- CHANGE THIS TO YOUR CAMERA ---
+RTSP_URL = "rtsp://admin:Camera123@192.168.100.53:554/stream1"
 
-def ffmpeg_process(rtsp_url):
-    cmd = [
-        "ffmpeg",
-        "-rtsp_transport", "tcp",
-        "-i", rtsp_url,
-        "-f", "mpegts",
-        "-codec:v", "mpeg1video",
-        "-s", "640x360",
-        "-b:v", "800k",
-        "-r", "20",
-        "-"
-    ]
-    return subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+def generate_frames():
+    cap = cv2.VideoCapture(RTSP_URL)
+
+    if not cap.isOpened():
+        print("❌ Cannot connect to RTSP camera")
+        return
+
+    while True:
+        success, frame = cap.read()
+        if not success:
+            break
+
+        # Encode frame as JPEG
+        ret, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+
+        # Yield frame as multipart stream
+        yield (
+            b'--frame\r\n'
+            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
+        )
 
 @app.route("/")
-def index():
-    return send_from_directory(".", "index.html")
+def home():
+    return "<h2>RTSP Camera is Running!</h2><p>Go to: /video</p>"
 
 @app.route("/video")
 def video():
-    return send_from_directory(".", "index.html")
-
-@sock.route("/stream")
-def stream(ws):
-    process = ffmpeg_process(RTSP_URL)
-    try:
-        while True:
-            data = process.stdout.read(1024)
-            if not data:
-                break
-            ws.send(data, binary=True)
-    except:
-        pass
-    finally:
-        try:
-            process.kill()
-        except:
-            pass
+    return Response(
+        generate_frames(),
+        mimetype="multipart/x-mixed-replace; boundary=frame"
+    )
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3000)
+    # Railway uses PORT environment variable
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
