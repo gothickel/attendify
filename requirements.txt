@@ -5,8 +5,7 @@ mysql-connector-python
 opencv-python-headless
 pyttsx3
 numpy 
-
-
+requests
 
 
 
