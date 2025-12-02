@@ -1,12 +1,6 @@
-flask
-flask-sock
-gunicorn
-mysql-connector-python
-opencv-python-headless
-pyttsx3
-numpy 
-requests
-
+flask==3.0.0
+opencv-python-headless==4.8.0.74
+gunicorn==21.2.0
 
 
 
