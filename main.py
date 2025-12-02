@@ -1,34 +1,52 @@
-import cv2
+import subprocess
+import signal
+from flask import Flask, send_from_directory
+from flask_sock import Sock
 
-# Initialize the camera
-camera = cv2.VideoCapture(1)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
+sock = Sock(app)
 
-save_path = "/home/pi/" # replace with your path directory
-image_count = 0
-roi = (300, 100, 440, 380)
-print("Press 'c' to capture an image and 'q' to quit.")
+# CHANGE THIS to your camera RTSP URL or set as environment variable before deploy
+RTSP_URL = "rtsp://admin:Camera123@192.168.100.53:554/stream1"
 
-while True:
-    # Capture a frame
-    success, frame=camera.read()
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
-    resize = cv2.resize(frame, (900, 800)) 
-    # Display the live feed
-    cv2.imshow("Capturing Images", resize)
-    assert success
-    # Save an image when 'c' is pressed
-    key = cv2.waitKey(1)
-    if key & 0xFF == ord('c'):
-        # Save the cropped image
-        image_path = f"nochair/image_{image_count}.jpg"
-        cv2.imwrite(image_path, resize)
-        print(f"Saved: {image_path}")
-        image_count += 1
+def ffmpeg_process(rtsp_url):
+    # ffmpeg command: read RTSP and output MPEG1 video to stdout
+    cmd = [
+        "ffmpeg",
+        "-rtsp_transport", "tcp",
+        "-i", rtsp_url,
+        "-f", "mpegts",
+        "-codec:v", "mpeg1video",
+        "-s", "640x360",
+        "-b:v", "800k",
+        "-r", "20",
+        "-"
+    ]
+    return subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, preexec_fn=None)
 
-    # Exit on 'q' key press
-    elif key & 0xFF == ord('q'):
-        break
+@app.route("/")
+def index():
+    # serve the static index.html
+    return send_from_directory(".", "index.html")
 
-cv2.destroyAllWindows()
-camera.release()
+@sock.route("/stream")
+def stream(ws):
+    # For every new websocket connection, spawn ffmpeg
+    process = ffmpeg_process(RTSP_URL)
+    try:
+        while True:
+            chunk = process.stdout.read(1024)
+            if not chunk:
+                break
+            ws.send(chunk, binary=True)
+    except Exception:
+        pass
+    finally:
+        try:
+            process.kill()
+        except Exception:
+            pass
 
+if __name__ == "__main__":
+    # For local testing only. Railway will use gunicorn command in README/Procfile
+    app.run(host="0.0.0.0", port=3000)
